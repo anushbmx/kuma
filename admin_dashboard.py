@@ -1,4 +1,6 @@
 """
+Just an edit
+
 This file was generated with the customdashboard management command and
 contains the class for the main dashboard.
 
