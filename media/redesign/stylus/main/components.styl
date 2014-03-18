@@ -3,8 +3,8 @@
   For example, .toggler is used in a few different widgets (TOC, subnav, etc.)
 */
 
-@import 'vars'
-@import 'mixins'
+@import '../includes/vars'
+@import '../includes/mixins'
 
 /* toggler component: a basic slide up and slide now system*/
 .toggler {
@@ -94,63 +94,4 @@
   }
 
   reverse-link-decoration();
-}
-
-/* submenu generator: used in the main navigation and wiki */
-component-submenu-method(menu-width, num-columns, background-color, arrow-border-color) {
-  position: absolute;
-  padding: grid-spacing;
-  background: background-color;
-  display: none;
-  width: menu-width;
-  box-shadow: 3px 3px 5px #aaa;
-
-  .submenu-column {
-    col-width = ((menu-width - (num-columns * grid-spacing) - 1) / num-columns);
-
-    padding-right: grid-spacing;
-    vertical-align: text-top;
-    margin-right: grid-spacing;
-    border-right: 1px dotted #d4dde4;
-    width: col-width;
-
-    &.last, &:only-child {
-      margin-right: 0;
-      border-right: 0;
-      padding-right: 0;
-      width: auto;
-      float: none;
-      border-right: none;
-    }
-  }
-  
-  .title {
-    compat-only(font-size, base-font-size);
-    compat-only(padding-left, 0);
-    compat-only(background, none);
-  }
-
-  a {
-    @extend .smaller;
-    padding: 5px 0;
-    display: block;
-  }
-  reverse-link-decoration();
-
-  generate-arrow();
-  &:before {
-    border-bottom-color: background-color;
-    position: absolute;
-    z-index: 2;
-  }
-
-  &:after {
-    border-bottom-color: arrow-border-color;
-    position: absolute;
-    z-index: 1;
-  }
-}
-
-.submission .section > legend {
-    margin: 0;
 }

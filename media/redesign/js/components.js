@@ -1,4 +1,5 @@
 (function($) {
+  'use strict';
 
   var focusClass = 'focused';
   var noop = function(){};
@@ -40,19 +41,26 @@
 
       // Add a mouseenter / focus event to get the showing of the submenu in motion
       $self.on('mouseenter focus', function() {
+
         // If this is a fake focus set by us, ignore this
         if($submenu.ignoreFocus) return;
 
         // If no submenu, go
         if(!$submenu.length) {
           clear(showTimeout);
-          $.fn.mozMenu.$openMenu && closeSubmenu($.fn.mozMenu.$openMenu.parent().find('.submenu'));
+          $.fn.mozMenu.$openMenu && closeSubmenu(getOpenParent());
           return;
         }
 
         // Lazy-initialize events that aren't needed until an item is entered.
         if(!initialized) {
           initialized = 1;
+
+          // Add the close
+          var $closeButton = $('<button class="submenu-close transparent">\
+            <span class="offscreen">' + gettext('Close submenu') + '</span>\
+            <i aria-hidden="true" class="icon-remove-sign"></i>\
+          </button>').appendTo($submenu);
 
           // Hide the submenu when the main menu is blurred for hideDelay
           $self.on('mouseleave focusout', function() {
@@ -80,8 +88,8 @@
               $self[0].focus();
             }
           });
-          
-          $submenu.find('.submenu-close').on('click', function(){
+
+          $closeButton.on('click', function(){
             closeSubmenu($(this).parent());
           });
         }
@@ -89,7 +97,7 @@
         // Used for tab navigation from submenu to the next menu item
         if($.fn.mozMenu.$openMenu && $.fn.mozMenu.$openMenu != $self) {
           clear(showTimeout);
-          closeSubmenu($.fn.mozMenu.$openMenu.parent().find('.submenu'));
+          closeSubmenu(getOpenParent());
         }
         else if($.fn.mozMenu.$openMenu == $self) {
           clear(closeTimeout);
@@ -120,6 +128,11 @@
         }, settings.showDelay);
       });
     });
+
+    // Gets the open parent
+    function getOpenParent() {
+      return $.fn.mozMenu.$openMenu.parent().find('.submenu');
+    }
 
     // Clears the current timeout, interrupting fade-ins and outs as necessary
     function clear(timeout) {
@@ -219,12 +232,12 @@
         e.preventDefault();
         e.stopPropagation();
         if(e.keyCode == 27) {
-          $(this).siblings('a').trigger('click').focus();
+          $(this).siblings('a').trigger('mdn:click').focus();
         };
-      }); 
+      });
 
       // Click event to show/hide
-      $self.on('click', '.toggler', function(e) {
+      $self.on('click mdn:click', '.toggler', function(e) {
         e.preventDefault();
         e.stopPropagation();
         settings.onOpen.call(this);
@@ -279,6 +292,16 @@
       function getState($li) {
         return $li.attr(closedAttribute);
       }
+    });
+  };
+
+  /*
+    Plugin to adds a native html5 contextmenu
+    Callback passes two arguments, event.target and the menu-element
+  */
+  $.fn.mozContextMenu = function (callback) {
+    return $(this).on('contextmenu', function(e) {
+      callback(e.target, $('#' + $(this).attr('contextmenu')));
     });
   };
 

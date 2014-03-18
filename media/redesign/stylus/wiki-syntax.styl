@@ -2,7 +2,7 @@
 	Updates in this file modify or enhance the code provided by Prism.js
 */
 
-@import 'vars'
+@import 'includes/vars'
 
 code[class*='language-'], pre[class*='language-'] {
 	color: inherit;
@@ -15,4 +15,13 @@ code[class*='language-'], pre[class*='language-'] {
 	background-image:  url(media-url-dir + 'blueprint-dark.png');
 	background-position: top center;
 	background-repeat: repeat;
+}
+
+/*
+	Some places in the wiki feature <pre><em><code>
+*/
+pre em code[class*='language-'] {
+	background-image: none;
+	border-left: 0;
+	background: transparent;
 }

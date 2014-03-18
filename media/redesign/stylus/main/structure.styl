@@ -2,6 +2,9 @@
   Classes which should be mirror extensions and mixins - mixins.styl
   These classes are used within wiki content so we must have them available as classes as well
 */
+
+@import '../includes/mixins'
+
 .offscreen {
   offscreen();
 }
@@ -109,7 +112,7 @@
     margin-bottom: grid-spacing;
 
     > li {
-      bidi-style(padding-left, 31px, padding-right, 0);
+      bidi-style(margin-left, 31px, margin-right, 0);
       position: relative;
       opacity: 1;
       max-width: 1000px;
@@ -117,9 +120,10 @@
       vendorize(transition-property, width);
       vendorize(transition-duration, default-animation-duration);
       vendorize(transition-delay, default-animation-duration);
+      text-align: initial;
 
       &:first-child {
-        padding-left: 0;
+        margin-left: 0;
       }
 
       > a i {
@@ -145,24 +149,19 @@
   .submenu {
     menu-border-width = 5px;
     menu-arrow-top = -19px;
-    component-submenu-method(520px, 2, #fff, #333);
+    component-submenu-method(380px, 2, #fff, #333);
 
     top: 40px;
-    left: -186px;
+    left: -136px;
     border-top: menu-border-width solid #404040;
 
     .submenu-column {
       min-height: 90px;
-      display: inline-block;
-    }
-
-    .submenu-close{
-      display:none;
     }
 
     &:before, &:after {
       top: menu-arrow-top;
-      left: 269px;
+      bidi-style(left, 190px, right, auto);
     }
 
     &:after {
@@ -174,13 +173,8 @@
     width: 180px;
     left: -74px;
 
-    .submenu-column {
-      width: 100%;
-    }
-
     &:before, &:after {
-      top: menu-arrow-top;
-      left: 98px;
+      bidi-style(left, 98px, right, auto);
     }
   }
 
@@ -378,15 +372,24 @@ footer {
 
   p {
     bidi-style(padding-left, 92px, padding-right, 0, true);
-    bidi-style(background-position, -5px 0, background-position, right 0);
-    background-image: url(logo-sprite-url);
-    background-position: 0px -83px;
-    background-size: 205px auto;
-    background-repeat: no-repeat;
     compat-important(padding-top, 10px);
     padding-bottom: 0;
-
+    position: relative;
     min-height: 62px;
+
+    &:after {
+      bidi-style(left, 0, right, 0);
+      content: '';
+      display: block;
+      width: 65px;
+      height: 60px
+      background-image: url(logo-sprite-url);
+      background-position: 0px -83px;
+      background-size: 205px auto;
+      background-repeat: no-repeat;
+      position: absolute;
+      top: 0;
+    }
   }
 
   .column-strip {
@@ -424,13 +427,25 @@ footer {
   cursor: default;
 }
 
-
 /* tablet updates */
 @media media-query-tablet {
+
+  /* make submenus full width */
+  #main-nav {
+    .submenu {
+      left: 0;
+      right: 0;
+
+      &:before, &:after {
+        bidi-style(left, 10px, right, auto);
+      }
+    }
+  }
+
   #main-nav {
     > ul {
       > li {
-        bidi-style(padding-left, 21px, padding-right, 0);
+        bidi-style(margin-left, 21px, margin-right, 0);
 
         > a {
           i {
@@ -461,7 +476,7 @@ footer {
         vendorize(transition-property, none);
 
         &:first-child {
-          padding-left: 0;
+          margin-left: 0;
         }
       }
     }
@@ -470,6 +485,7 @@ footer {
 
 /* break nav into blocks (own line) */
 @media media-query-navigation-block {
+
   #main-nav {
     > ul {
       float: none;
@@ -478,7 +494,7 @@ footer {
       > li {
         display: block;
         width: auto;
-        padding-left: 0;
+        margin-left: 0;
         margin: 10px 0;
       }
     }
@@ -531,35 +547,6 @@ footer {
       }
     }
   }
-
-  /* make submenus full width */
-  #main-nav {
-    .submenu {
-      left: 0;
-      right: 0;
-      width: auto;
-      min-width: 255px;
-      text-align: left;
-
-      &:before, &:after {
-        left: 10px;
-      }
-      .submenu-column {
-        width: 40%;
-        border-right: 0;
-      }
-
-      .submenu-close{
-        display: block;
-        position: absolute;
-        top: 20px;
-        right: 20px;
-        i{
-          margin-left: 0;
-        }
-      }
-    }
-  }
 }
 
 
@@ -580,4 +567,9 @@ p.field-explanation {
 label {selector-icon} {
     margin-left: 0;
     margin-right: 10px;
+}
+
+
+.submission .section > legend {
+    margin: 0;
 }

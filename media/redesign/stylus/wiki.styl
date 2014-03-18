@@ -1,7 +1,6 @@
-@import 'vars'
-@import 'mixins'
-@import 'grid'
-@import 'components'
+@import 'includes/vars'
+@import 'includes/mixins'
+@import 'includes/grid'
 
 /* mixins applying only to the wiki */
 make-wiki-blocks-flat() {
@@ -161,18 +160,22 @@ enable-toc-toggle() {
 article {
   position: relative;
 
-  .external:before {
-    content: '\f08e';
-    font-family: FontAwesome;
-    padding: 0 6px 0 0;
-    color: #bbb;
-    font-size: 11px;
-    display: inline-block;
-  }
+  .external {
+    white-space: pre-line;
 
-  .external:hover, .external:focus {
     &:before {
-      text-decoration: none;
+      content: '\f08e';
+      font-family: FontAwesome;
+      padding: 0 2px 0 0;
+      color: #bbb;
+      font-size: 10px;
+      display: inline-block;
+    }
+
+    &:hover, &:focus {
+      &:before {
+        text-decoration: none;
+      }
     }
   }
 
@@ -246,24 +249,21 @@ article {
 }
 
 .from-search-toc {
+  component-submenu-method(200px, 1, button-background, button-shadow-color)
   @extend .smaller;
   border: 1px solid button-shadow-color;
-  width: 200px;
-  position: absolute;
   left: 66px;
   top: 0;
   z-index: 2;
-  background: button-background;
-  padding: (grid-spacing / 2);
   color: #888;
+
+  &:before, &:after { /* remove submenu arrows */
+    display: none;
+  }
 
   ol {
     list-style-type: decimal;
     padding-left: grid-spacing;
-  }
-
-  li {
-    padding: 4px 0;
   }
 
   a.current {
@@ -313,7 +313,6 @@ article {
   float: right;
   margin-top: -5px;
 
-  text-align: right;
   compat-only(width, auto);
   compat-only(top, auto);
 
@@ -338,25 +337,7 @@ article {
   }
 
   .submenu {
-    component-submenu-method(160px, 1, button-background, button-shadow-color);
-    bidi-style(right, 0, left, auto);
-    top: 40px;
-    z-index: 3;
-    border-top: 1px solid button-shadow-color;
-
-    .submenu-column {
-      float: left;
-    }
-
-    &:before {
-      bidi-style(right, 10px, left, auto);
-      top: -18px;
-    }
-
-    &:after {
-      bidi-style(right, 10px, left, auto);
-      top: -20px;
-    }
+    @extend $advanced-menu;
   }
 }
 
@@ -519,7 +500,7 @@ div.bug, div.warning, div.overheadIndicator {
   &.fixed {
     position: fixed;
     top: 0;
-    z-index: 2;
+    z-index: 10;
     overflow-y: auto;
   }
 
@@ -539,7 +520,6 @@ div.bug, div.warning, div.overheadIndicator {
       bidi-value(text-align, left, right);
       bidi-style(left, -(grid-spacing * 1.5), right, auto);
 
-      text-align: right;
       position: absolute;
       left: -(grid-spacing + (grid-spacing/2));
       color: #484848;
@@ -588,6 +568,13 @@ div.bug, div.warning, div.overheadIndicator {
   compat-only(background, none);
 }
 
+.page-meta section h2,
+.page-meta section h3 {
+  .editor-help-icon {
+    font-size: 20px;
+  }
+}
+
 #page-tags, #page-comment {
   @extend .wiki-block;
 }
@@ -631,8 +618,23 @@ div.bug, div.warning, div.overheadIndicator {
   h2 {selector-icon}, h3 {selector-icon} {
     @extend .right-icons;
   }
-}
 
+  .first-contrib-welcome {
+    background: light-background-color;
+    border: 5px solid header-background-color;
+    padding: 15px 15px 10px;
+    margin-bottom: 20px;
+
+    h2 {
+      margin: 0 0 .5em;
+      font: bold 18px/1.5 'Open Sans', sans-serif;
+    }
+
+    p {
+      margin-bottom: .6em;
+    }
+  }
+}
 
 /* ckeditor / content area styles */
 .ckeditor-container {
@@ -772,6 +774,8 @@ span.cke_skin_kuma {
     display: block; 
   }
 }
+
+
 
 /*
   Small desktop.  We go to a two-column layout

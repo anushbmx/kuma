@@ -1,17 +1,20 @@
 (function($) {
+    'use strict';
+
      // Retrieve request and move information
-     var $moveSlug = $('#move-slug'),
-         $suggestionInput = $('#parent-suggestion'),
-         $suggestionContainer= $('.parent-suggest-container'),
-         $lookupLink = $('.move-lookup-link'),
-         specific_slug = $('#current-slug').val(),
-         moveLocale = $('#locale').val(),
-         onHide = function() {
-             $suggestionContainer.removeClass('show');
-             $moveSlug[0].focus();
-             $suggestionInput.mozillaAutocomplete('clear');
-             $suggestionInput.attr('disabled', 'disabled');
-         };
+     var $moveSlug = $('#move-slug');
+     var $suggestionInput = $('#parent-suggestion');
+     var $suggestionContainer= $('.parent-suggest-container');
+     var $lookupLink = $('.move-lookup-link');
+     $previewUrl = $('#preview-url'),
+     var specific_slug = $('#current-slug').val();
+     var moveLocale = $('#locale').val();
+     var onHide = function() {
+         $suggestionContainer.removeClass('show');
+         $moveSlug[0].focus();
+         $suggestionInput.mozillaAutocomplete('clear');
+         $suggestionInput.attr('disabled', 'disabled');
+     };
 
      // Hook up the autocompleter before creating the link connection
      $suggestionInput.mozillaAutocomplete({
@@ -35,9 +38,8 @@
      });
 
      // Show the lookup when the link is clicked
-     $lookupLink.click(function(e) {
+     $lookupLink.on('click', function(e) {
          e.preventDefault();
-         // Show the lookup
          $suggestionContainer.addClass('show');
          $suggestionInput[0].disabled = false;
          $suggestionInput[0].focus();
@@ -49,6 +51,12 @@
      // Go to link when blured
      $moveSlug.on('blur', function() {
          $lookupLink.focus();
+     });
+
+     // Update the preview upon change
+     $moveSlug.on('keyup', function() {
+        var value = $(this).val() || $previewUrl.data('specific');
+        $previewUrl.text($previewUrl.data('url') + value);
      });
 
      // Help on the client side for validating slugs to be moved

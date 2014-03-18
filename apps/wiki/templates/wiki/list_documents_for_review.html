@@ -17,12 +17,10 @@
 {% set crumbs = [(None, title)] %}
 
 {% block content %}
-<section id="content">
-  <div class="wrap">
-    <div id="content-main" class="full">
 
       <div id="document-list" class="boxed">
         <h1>{{ title }}</h1>
+        <p>{{ _('Found {0} documents.')|f(count) }}</p>
         {% if documents.object_list %}
           <ul class="documents cols-3">
             {% for doc in documents.object_list %}
@@ -34,9 +32,5 @@
           <p>{{ _('There are no articles.') }}</p>
         {% endif %}
       </div>
-
-    </div>
-   </div>
-</section>
+      
 {% endblock %}
-{# vim: set ts=2 et sts=2 sw=2: #}

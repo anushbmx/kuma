@@ -100,7 +100,7 @@ mdn.ckeditor.redirectPattern = '{{ redirect_pattern|safe }}';
 CKEDITOR.timestamp = '{{ BUILD_ID_JS }}';
 CKEDITOR.editorConfig = function(config) {
 
-  config.extraPlugins = 'definitionlist,mdn-buttons,mdn-link,mdn-syntaxhighlighter,mdn-keystrokes,mdn-attachments,mdn-image,mdn-enterkey,mdn-wrapstyle,mdn-table,tablesort,mdn-sampler,mdn-sample-finder,mdn-maximize,mdn-redirect,youtube,autogrow';
+  config.extraPlugins = 'definitionlist,mdn-buttons,mdn-link,mdn-syntaxhighlighter,mdn-keystrokes,mdn-attachments,mdn-image,mdn-enterkey,mdn-wrapstyle,mdn-table,tablesort,mdn-sampler,mdn-sample-finder,mdn-maximize,mdn-redirect,youtube,autogrow,texzilla';
   config.removePlugins = 'link,image,tab,enterkey,table,maximize';
   config.entities = false;
   
@@ -110,7 +110,7 @@ CKEDITOR.editorConfig = function(config) {
       ['Maximize'],
       '/',
       ['h1Button', 'h2Button', 'h3Button', 'h4Button', 'h5Button', 'h6Button', 'Styles'],
-      ['preButton', 'mdn-syntaxhighlighter', 'mdn-sampler', 'mdn-sample-finder', 'mdn-redirect', 'youtube'],
+      ['preButton', 'mdn-syntaxhighlighter', 'mdn-sampler', 'mdn-sample-finder', 'mdn-redirect', 'youtube', 'texzilla'],
       ['Link', 'Unlink', 'Anchor', '-', 'Bold', 'Italic', 'Underline', 'codeButton', 'Strike', 'Superscript', 'RemoveFormat', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight']
   ];
   
@@ -119,10 +119,10 @@ CKEDITOR.editorConfig = function(config) {
   config.toolbar = 'MDN';
   config.tabSpaces = 2;
   config.contentsCss = [
-    mdn.mediaPath + 'css/wiki-screen.css?{{ BUILD_ID_JS }}', 
-    mdn.mediaPath + 'redesign/css/main.css?{{ BUILD_ID_JS }}', 
-    mdn.mediaPath + 'css/wiki-edcontent.css?{{ BUILD_ID_JS }}', 
-    mdn.mediaPath + 'css/libs/font-awesome/css/font-awesome.min.css?{{ BUILD_ID_JS }}', 
+    mdn.mediaPath + 'css/wiki-screen.css?{{ BUILD_ID_JS }}',
+    mdn.mediaPath + 'redesign/css/main.css?{{ BUILD_ID_JS }}',
+    mdn.mediaPath + 'redesign/css/wiki-editor.css?{{ BUILD_ID_JS }}',
+    mdn.mediaPath + 'css/libs/font-awesome/css/font-awesome.min.css?{{ BUILD_ID_JS }}',
     '/en-US/docs/Template:CustomCSS?raw=1'
   ];
   

@@ -82,6 +82,38 @@ class ContentSectionToolTests(TestCase):
             ok_(id not in seen_ids)
             seen_ids.add(id)
 
+    def test_incremented_section_ids(self):
+
+        doc_src = """
+        <h1 class="header1">Header One</h1>
+        <h1>Header One</h1>
+        <h1>Header One</h1>
+        <h1>Header Two</h1>
+        <h1 name="someId">Header Two</h1>
+        """
+
+        result_src = (wiki.content
+                      .parse(doc_src)
+                      .injectSectionIDs()
+                      .serialize())
+
+        expected = """
+        <h1 class="header1" id="Header_One">Header One</h1>
+        <h1 id="Header_One_2">Header One</h1>
+        <h1 id="Header_One_3">Header One</h1>
+        <h1 id="Header_Two">Header Two</h1>
+        <h1 id="someId" name="someId">Header Two</h1>
+        """
+
+        eq_(result_src, expected)
+
+        # Ensure 1, 2 doesn't turn into 3, 4
+        result_src = (wiki.content
+                      .parse(expected)
+                      .injectSectionIDs()
+                      .serialize())
+        eq_(result_src, expected)
+
     def test_simple_implicit_section_extract(self):
         doc_src = """
             <h1 id="s1">Head 1</h1>
@@ -787,8 +819,10 @@ class ContentSectionToolTests(TestCase):
 
         document(title=u'Héritée', locale=u'fr', slug=u'CSS/Héritage',
                  save=True)
+        document(title=u'DOM/StyleSheet', locale=u'en-US',
+                 slug=u'DOM/StyleSheet', save=True)
 
-        base_url = u'http://testserver/'
+        base_url = u'https://testserver'
         vars = dict(
             base_url=base_url,
             exist_url=d.get_absolute_url(),
@@ -823,6 +857,11 @@ class ContentSectionToolTests(TestCase):
                 <a href="%(tag_url)s">Tag link</a>
                 <a href="%(feed_url)s">Feed link</a>
                 <a href="%(templates_url)s">Templates link</a>
+                <a href="/en-US/docs/DOM/stylesheet">Case sensitive 1</a>
+                <a href="/en-US/docs/DOM/Stylesheet">Case sensitive 1</a>
+                <a href="/en-US/docs/DOM/StyleSheet">Case sensitive 1</a>
+                <a href="/en-us/docs/dom/StyleSheet">Case sensitive 1</a>
+                <a href="/en-US/docs/dom/Styles">For good measure</a>
         """ % vars
         expected = u"""
                 <li><a href="%(nonen_slug)s">Héritée</a></li>
@@ -844,6 +883,11 @@ class ContentSectionToolTests(TestCase):
                 <a href="%(tag_url)s">Tag link</a>
                 <a href="%(feed_url)s">Feed link</a>
                 <a href="%(templates_url)s">Templates link</a>
+                <a href="/en-US/docs/DOM/stylesheet">Case sensitive 1</a>
+                <a href="/en-US/docs/DOM/Stylesheet">Case sensitive 1</a>
+                <a href="/en-US/docs/DOM/StyleSheet">Case sensitive 1</a>
+                <a href="/en-us/docs/dom/StyleSheet">Case sensitive 1</a>
+                <a class="new" href="/en-US/docs/dom/Styles">For good measure</a>
         """ % vars
 
         # Split the markup into lines, to better see failures

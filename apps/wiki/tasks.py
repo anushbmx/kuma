@@ -2,53 +2,22 @@ import logging
 
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.contrib.sites.models import Site
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail, mail_admins
 from django.db import transaction
 from django.dispatch import receiver
-from django.template import Context, loader
 
 import celery.conf
 from celery.task import task
 from celery.messaging import establish_connection
-from tower import ugettext as _
 
-from sumo.urlresolvers import reverse
 from sumo.utils import chunked
 from wiki.models import Document, SlugCollision
 from wiki.signals import render_done
 
 
 log = logging.getLogger('k.task')
-
-
-@task
-def send_reviewed_notification(revision, document, message):
-    """Send notification of review to the revision creator."""
-    if revision.reviewer == revision.creator:
-        # log.debug('Revision (id=%s) reviewed by creator, skipping email' % \
-        #           revision.id)
-        return
-
-    # log.debug('Sending reviewed email for revision (id=%s)' % revision.id)
-    if revision.is_approved:
-        subject = _('Your revision has been approved: {title}')
-    else:
-        subject = _('Your revision has been rejected: {title}')
-    subject = subject.format(title=document.title)
-    t = loader.get_template('wiki/email/reviewed.ltxt')
-    url = reverse('wiki.document_revisions', locale=document.locale,
-                  args=[document.slug])
-    content = t.render(Context({'document_title': document.title,
-                                'approved': revision.is_approved,
-                                'reviewer': revision.reviewer,
-                                'message': message,
-                                'url': url,
-                                'host': Site.objects.get_current().domain}))
-    send_mail(subject, content, settings.TIDINGS_FROM_ADDRESS,
-              [revision.creator.email])
 
 
 def schedule_rebuild_kb():
@@ -178,13 +147,15 @@ def move_page(locale, slug, new_slug, email):
         return
 
     transaction.commit()
+    subject = 'Page move completed: ' + slug + ' (' + locale + ')'
+    full_url = settings.SITE_URL + '/' + locale + '/docs/' + new_slug
     message = """
     Page move completed.
 
     The move requested for the document with slug %(slug)s in locale
     %(locale)s, and all its children, has been completed.
 
-    You can now view this document at its new slug, %(new_slug)s.
-    """ % {'slug': slug, 'locale': locale, 'new_slug': new_slug}
-    send_mail('Page move completed', message, settings.DEFAULT_FROM_EMAIL,
+    You can now view this document at its new location: %(full_url)s.
+    """ % {'slug': slug, 'locale': locale, 'full_url': full_url}
+    send_mail(subject, message, settings.DEFAULT_FROM_EMAIL,
               [user.email])

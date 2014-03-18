@@ -300,7 +300,7 @@ SERVE_MEDIA = False
 
 # Paths that don't require a locale prefix.
 SUPPORTED_NONLOCALES = ('media', 'admin', 'robots.txt', 'services', 'static',
-                        '1', 'files', '@api', 'grappelli',
+                        '1', 'files', '@api', 'grappelli', '__debug__',
                         '.well-known')
 
 # Make this unique, and don't share it with anybody.
@@ -311,7 +311,6 @@ TEMPLATE_LOADERS = (
     'jingo.Loader',
     'django.template.loaders.filesystem.Loader',
     'django.template.loaders.app_directories.Loader',
-#     'django.template.loaders.eggs.Loader',
 )
 
 JINGO_EXCLUDE_APPS = (
@@ -331,7 +330,6 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.contrib.messages.context_processors.messages',
 
     'sumo.context_processors.global_settings',
-    'sumo.context_processors.for_data',
 
     'devmo.context_processors.i18n',
     'devmo.context_processors.next_url',
@@ -549,7 +547,6 @@ MINIFY_BUNDLES = {
         'mdn': (
             'css/fonts.css',
             'css/mdn-screen.css',
-            'css/redesign-transition.css',
             'css/libs/font-awesome/css/font-awesome.css',
             'redesign/css/main.css',
             'redesign/css/badges.css',
@@ -557,6 +554,7 @@ MINIFY_BUNDLES = {
         'jquery-ui': (
             'js/libs/jquery-ui-1.10.3.custom/css/ui-lightness/jquery-ui-1.10.3.custom.min.css',
             'css/jqueryui/moz-jquery-plugins.css',
+            'redesign/css/jquery-ui-customizations.css',
         ),
         'demostudio': (
             'css/demos.css',
@@ -583,11 +581,6 @@ MINIFY_BUNDLES = {
         'sphinx': (
             'redesign/css/wiki.css',
             'redesign/css/sphinx.css',
-        ),
-        'dashboards': (
-            'css/dashboards.css',
-            'js/libs/DataTables-1.9.4/media/css/jquery.dataTables.css',
-            'js/libs/DataTables-1.9.4/extras/Scroller/media/css/dataTables.scroller.css',
         ),
         'users': (
             'redesign/css/users.css',
@@ -619,7 +612,7 @@ MINIFY_BUNDLES = {
         'profile': (
             'redesign/css/profile.css',
         ),
-        'redesign-dashboards': (
+        'dashboards': (
             'redesign/css/dashboards.css',
             'redesign/css/diff.css',
             'js/libs/DataTables-1.9.4/media/css/jquery.dataTables.css',
@@ -630,11 +623,12 @@ MINIFY_BUNDLES = {
         ),
     },
     'js': {
-        'redesign-main': (
+        'main': (
             'js/jquery-upgrade-compat.js',
             'redesign/js/components.js',
             'redesign/js/main.js',
             'redesign/js/badges.js',
+            'redesign/js/analytics.js',
         ),
         'jquery2': (
             'js/libs/jquery-2.1.0.js',
@@ -677,7 +671,6 @@ MINIFY_BUNDLES = {
             'js/libs/tag-it.js',
         ),
         'search': (
-            'js/store.js',
             'redesign/js/search.js',
         ),
         'wiki-edit': (
@@ -703,7 +696,6 @@ MINIFY_BUNDLES = {
             'js/syntax-prism.js',
         ),
         'wiki': (
-            'js/store.js',
             'redesign/js/search.js',
             'redesign/js/wiki.js',
         ),
