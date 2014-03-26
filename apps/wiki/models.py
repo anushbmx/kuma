@@ -435,7 +435,8 @@ class BaseDocumentManager(models.Manager):
         return True
 
     def filter_for_list(self, locale=None, category=None, tag=None,
-                        tag_name=None, errors=None):
+                        tag_name=None, errors=None, noparent=None,
+                        toplevel=None):
         docs = (self.filter(is_template=False, is_redirect=False)
                     .exclude(slug__startswith='User:')
                     .exclude(slug__startswith='Talk:')
@@ -457,6 +458,12 @@ class BaseDocumentManager(models.Manager):
         if errors:
             docs = (docs.exclude(rendered_errors__isnull=True)
                         .exclude(rendered_errors__exact='[]'))
+        if noparent:
+            # List translated pages without English source associated
+            docs = docs.filter(parent__isnull=True)
+        if toplevel:
+            docs = docs.filter(parent_topic__isnull=True)
+
         # Leave out the html, since that leads to huge cache objects and we
         # never use the content in lists.
         docs = docs.defer('html')
@@ -1339,7 +1346,6 @@ class Document(NotificationsMixin, models.Model):
                                 },
                                 is_approved=True,
                                 toc_depth=self.current_revision.toc_depth,
-                                reviewer=self.current_revision.creator,
                                 creator=user)
         return (redirect_doc, redirect_rev)
 
@@ -2026,10 +2032,7 @@ class Revision(models.Model):
     render_max_age = models.IntegerField(blank=True, null=True)
 
     created = models.DateTimeField(default=datetime.now, db_index=True)
-    reviewed = models.DateTimeField(null=True)
     comment = models.CharField(max_length=255)
-    reviewer = models.ForeignKey(User, related_name='reviewed_revisions',
-                                 null=True)
     creator = models.ForeignKey(User, related_name='created_revisions')
     is_approved = models.BooleanField(default=True, db_index=True)
 
@@ -2113,13 +2116,6 @@ class Revision(models.Model):
             self.title = self.document.title
         if not self.slug:
             self.slug = self.document.slug
-
-        if self.is_approved and not self.reviewed:
-            # HACK: For Kuma, we do an end-run around the review system here by
-            # auto-self-reviewing all revisions.
-            # TODO: Remove the kitsune review/approval system from kuma.
-            self.reviewer = self.creator
-            self.reviewed = datetime.now()
 
         super(Revision, self).save(*args, **kwargs)
 
@@ -2211,16 +2207,12 @@ class EditorToolbar(models.Model):
         return self.name
 
 
-def get_current_or_latest_revision(document, reviewed_only=True):
+def get_current_or_latest_revision(document):
     """Returns current revision if there is one, else the last created
     revision."""
     rev = document.current_revision
     if not rev:
-        if reviewed_only:
-            filter = models.Q(is_approved=False, reviewed__isnull=False)
-        else:
-            filter = models.Q()
-        revs = document.revisions.exclude(filter).order_by('-created')
+        revs = document.revisions.order_by('-created')
         if revs.exists():
             rev = revs[0]
 

@@ -418,7 +418,7 @@ def _get_html_and_errors(request, doc, rendering_params):
     return doc_html, ks_errors, render_raw_fallback
 
 
-def _generate_toc_html(doc, tool, rendering_params):
+def _generate_toc_html(doc, rendering_params):
     """
     Generate the HTML, if needed, for a Document's table of contents.
 
@@ -429,35 +429,50 @@ def _generate_toc_html(doc, tool, rendering_params):
     return toc_html
 
 
-def _filter_doc_html(request, doc, tool, rendering_params):
+def _filter_doc_html(request, doc, doc_html, rendering_params):
     """
     Apply needed filtering/annotating operations to a Document's HTML.
-
     """
+    # If ?summary is on, just serve up the summary as doc HTML
+    if rendering_params['summary']:
+        return doc.get_summary_html()
+
+    # Shortcut the parsing & filtering, if none of these relevant rendering
+    # params are set.
+    if not (rendering_params['section'] or rendering_params['raw'] or
+            rendering_params['edit_links'] or rendering_params['include']):
+        return doc_html
+
+    # TODO: One more view-time content parsing instance to refactor
+    tool = wiki.content.parse(doc_html)
+
+    # ?raw view is often used for editors - apply safety filtering.
+    # TODO: Should this stuff happen in render() itself?
+    if rendering_params['raw']:
+        # HACK: Raw rendered content has not had section IDs injected
+        tool.injectSectionIDs()
+        tool.filterEditorSafety()
+
     # If a section ID is specified, extract that section.
+    # TODO: Pre-extract every section on render? Might be over-optimization
     if rendering_params['section']:
         tool.extractSection(rendering_params['section'])
 
-    # If this user can edit the document, inject some section editing
-    # links.
+    # If this user can edit the document, inject section editing links.
+    # TODO: Rework so that this happens on the client side?
     if ((rendering_params['edit_links'] or not rendering_params['raw']) and
-        request.user.is_authenticated() and
-        doc.allows_revision_by(request.user)):
+            request.user.is_authenticated() and
+            doc.allows_revision_by(request.user)):
         tool.injectSectionEditingLinks(doc.full_path, doc.locale)
-
-    # ?raw view is often used for editors - apply safety filtering.
-    if rendering_params['raw']:
-        tool.filterEditorSafety()
 
     doc_html = tool.serialize()
 
     # If this is an include, filter out the class="noinclude" blocks.
+    # TODO: Any way to make this work in rendering? Possibly over-optimization,
+    # because this is often paired with ?section - so we'd need to store every
+    # section twice for with & without include sections
     if rendering_params['include']:
-        doc_html = (wiki.content.filter_out_noinclude(doc_html))
-
-    # If ?summary is on, just serve up the summary as doc HTML
-    if rendering_params['summary']:
-        doc_html = doc.get_summary_html()
+        doc_html = wiki.content.filter_out_noinclude(doc_html)
 
     return doc_html
 
@@ -488,6 +503,7 @@ def _get_seo_parent_title(slug_dict, document_locale):
 
 @newrelic.agent.function_trace()
 @allow_CORS_GET
+@prevent_indexing
 def _document_deleted(request, deletion_logs):
     """
     When a Document has been deleted, display a notice.
@@ -635,12 +651,8 @@ def document(request, document_slug, document_locale):
 
     # Step 5: Start parsing and applying filters.
     if not doc.is_template:
-        tool = wiki.content.parse(doc_html)
-
-        toc_html = _generate_toc_html(doc, tool, rendering_params)
-
-        doc_html = _filter_doc_html(request, doc,
-                                    tool, rendering_params)
+        toc_html = _generate_toc_html(doc, rendering_params)
+        doc_html = _filter_doc_html(request, doc, doc_html, rendering_params)
 
     # Step 6: If we're doing raw view, bail out to that now.
     if rendering_params['raw']:
@@ -860,11 +872,10 @@ def list_documents(request, category=None, tag=None):
                                              tag=tag_obj)
     paginated_docs = paginate(request, docs, per_page=DOCUMENTS_PER_PAGE)
     return render(request, 'wiki/list_documents.html',
-                        {'documents': paginated_docs,
-                         'count': docs.count(),
-                         'category': category,
-                         'tag': tag})
-
+                  {'documents': paginated_docs,
+                   'count': docs.count(),
+                   'category': category,
+                   'tag': tag})
 
 @require_GET
 def list_templates(request):
@@ -872,19 +883,16 @@ def list_templates(request):
     docs = Document.objects.filter(is_template=True).order_by('title')
     paginated_docs = paginate(request, docs, per_page=DOCUMENTS_PER_PAGE)
     return render(request, 'wiki/list_documents.html',
-                        {'documents': paginated_docs,
-                         'count': docs.count(),
-                         'is_templates': True})
-
+                  {'documents': paginated_docs,
+                   'count': docs.count(),
+                   'is_templates': True})
 
 @require_GET
 def list_tags(request):
     """Returns listing of all tags"""
     tags = DocumentTag.objects.order_by('name')
     tags = paginate(request, tags, per_page=DOCUMENTS_PER_PAGE)
-    return render(request, 'wiki/list_tags.html',
-                        {'tags': tags})
-
+    return render(request, 'wiki/list_tags.html', {'tags': tags})
 
 @require_GET
 def list_files(request):
@@ -892,9 +900,7 @@ def list_files(request):
     files = paginate(request,
                      Attachment.objects.order_by('title'),
                      per_page=DOCUMENTS_PER_PAGE)
-    return render(request, 'wiki/list_files.html',
-                        {'files': files})
-
+    return render(request, 'wiki/list_files.html', {'files': files})
 
 @require_GET
 def list_documents_for_review(request, tag=None):
@@ -903,10 +909,10 @@ def list_documents_for_review(request, tag=None):
     docs = Document.objects.filter_for_review(locale=request.locale, tag=tag_obj)
     paginated_docs = paginate(request, docs, per_page=DOCUMENTS_PER_PAGE)
     return render(request, 'wiki/list_documents_for_review.html',
-                        {'documents': paginated_docs,
-                         'count': docs.count(),
-                         'tag': tag_obj,
-                         'tag_name': tag})
+                  {'documents': paginated_docs,
+                   'count': docs.count(),
+                   'tag': tag_obj,
+                   'tag_name': tag})
 
 @require_GET
 def list_documents_with_errors(request):
@@ -914,9 +920,31 @@ def list_documents_with_errors(request):
     docs = Document.objects.filter_for_list(locale=request.locale, errors=True)
     paginated_docs = paginate(request, docs, per_page=DOCUMENTS_PER_PAGE)
     return render(request, 'wiki/list_documents.html',
-                         {'documents': paginated_docs,
-                          'count': docs.count(),
-                          'errors': True})
+                  {'documents': paginated_docs,
+                   'count': docs.count(),
+                   'errors': True})
+
+@require_GET
+def list_documents_without_parent(request):
+    """Lists wiki documents without parent (no English source document)"""
+    docs = Document.objects.filter_for_list(locale=request.locale,
+                                            noparent=True)
+    paginated_docs = paginate(request, docs, per_page=DOCUMENTS_PER_PAGE)
+    return render(request, 'wiki/list_documents.html',
+                  {'documents': paginated_docs,
+                   'count': docs.count(),
+                   'noparent': True})
+
+@require_GET
+def list_top_level_documents(request):
+    """Lists documents directly under /docs/"""
+    docs = Document.objects.filter_for_list(locale=request.locale,
+                                            toplevel=True)
+    paginated_docs = paginate(request, docs, per_page=DOCUMENTS_PER_PAGE)
+    return render(request, 'wiki/list_documents.html',
+                  {'documents': paginated_docs,
+                   'count': docs.count(),
+                   'toplevel': True})
 
 
 @login_required
@@ -1671,8 +1699,7 @@ def translate(request, document_slug, document_locale, revision_id=None):
     if revision_id:
         initial_rev = get_object_or_404(Revision, pk=revision_id)
 
-    based_on_rev = get_current_or_latest_revision(parent_doc,
-                                                  reviewed_only=False)
+    based_on_rev = get_current_or_latest_revision(parent_doc)
 
     disclose_description = bool(request.GET.get('opendescription'))
 
@@ -1929,12 +1956,7 @@ def toc_view(request, document_slug=None, document_locale=None):
         return HttpResponseBadRequest()
 
     document = get_object_or_404(Document, **kwargs)
-    tool = wiki.content.parse(wiki.content.parse(document.html)
-                                .injectSectionIDs()
-                                .serialize())
-    toc_html = (wiki.content.parse(tool.serialize())
-                            .filter(wiki.content.SectionTOCFilter)
-                            .serialize())
+    toc_html = document.get_toc_html()
     if toc_html:
         toc_html = '<ol>' + toc_html + '</ol>'
 
