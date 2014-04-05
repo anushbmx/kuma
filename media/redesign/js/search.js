@@ -10,14 +10,10 @@
             submenu: fromSearchList,
             brickOnClick: true,
             onOpen: function(){
-                mdn.analytics.trackEvent(['_trackEvent',
-                                 'Search doc navigator',
-                                 'Open on hover']);
+                mdn.analytics.trackEvent(['Search doc navigator', 'Open on hover']);
             },
-            onClose: function(){
-                mdn.analytics.trackEvent(['_trackEvent',
-                                 'Search doc navigator',
-                                 'Close on blur']);
+            onClose: function() {
+                mdn.analytics.trackEvent(['Search doc navigator', 'Close on blur']);
             }
         });
         fromSearchList.find('ol').mozKeyboardNav();
@@ -88,7 +84,7 @@
                     href: doc.url,
                     on: {
                         click: function() {
-                            mdn.analytics.trackEvent(['_trackEvent',
+                            mdn.analytics.trackEvent([
                                              'Search doc navigator',
                                              'Click',
                                              $(this).attr('href'),
@@ -106,7 +102,7 @@
                         $('.from-search-next').each(function() {
                             $(this).attr('href', next_doc.url)
                                          .on('click', function() {
-                                                mdn.analytics.trackEvent(['_trackEvent',
+                                                mdn.analytics.trackEvent([
                                                                  'Search doc navigator',
                                                                  'Click next',
                                                                  next_doc.url,
@@ -122,8 +118,8 @@
                         $('.from-search-previous').each(function() {
                             $(this).attr('href', prev_doc.url)
                                          .on('click', function() {
-                                                mdn.analytics.trackEvent(['_trackEvent',
-                                                                 'Search doc navigator',
+                                                mdn.analytics.trackEvent([
+                                                                'Search doc navigator',
                                                                  'Click previous',
                                                                  prev_doc.url,
                                                                  prev_doc.id]);
@@ -136,6 +132,7 @@
                 }
                 var list_item = $('<li></li>').append(link);
                 $('.from-search-toc ol').append(list_item);
+                $('#wiki-document-head').addClass('from-search');
             });
         }
 
@@ -155,6 +152,7 @@
                 url: url,
                 dataType: 'json',
                 success: function(data) {
+                    fromSearchNav.parent().show();
                     storage.setItem('data', data);
                     populate(data);
                 },
@@ -163,12 +161,13 @@
                 }
             });
         } else {
+            fromSearchNav.parent().show();
             populate(data);
         }
         return this;
     };
 
-    $('.search-results-topics').on('change', 'input', function(event) {
+    $('.search-results-filters').on('change', 'input', function(event) {
         $('#search-form').submit();
         $(this).parents('fieldset').attr('disabled', 'disabled');
     });

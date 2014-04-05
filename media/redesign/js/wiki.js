@@ -108,7 +108,17 @@
         });
     }
 
-    /* Syntax highlighting scripts */
+    /*
+        Add icons to external links if they don't have images
+    */
+    $('.external').each(function() {
+        var $link = $(this);
+        if(!$link.find('img').length) $link.addClass('external-icon');
+    });
+
+    /*
+        Syntax highlighting scripts
+    */
     $('article pre').length && (function() {
         var mediaPath = win.mdn.mediaPath;
         $('<link />').attr({
@@ -240,7 +250,7 @@
         // Currently used within CKEDitor YouTube plugin
         parseQuerystring: function(str){
             var nvpair = {};
-            var qs = (str || window.location.search).replace('?', '');
+            var qs = (str || location.search).replace('?', '');
             var pairs = qs.split('&');
 
             $.each(pairs, function(i, v){

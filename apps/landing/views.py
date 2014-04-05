@@ -29,15 +29,9 @@ def home(request):
 
     return render(request, 'landing/homepage.html',
                   {'demos': demos, 'updates': updates,
-                    'current_challenge_tag_name': 
+                    'current_challenge_tag_name':
                     str(constance.config.DEMOS_DEVDERBY_CURRENT_CHALLENGE_TAG).strip()})
 
-
-def search(request):
-    """Google Custom Search results page."""
-    query = request.GET.get('q', '')
-    return render(request, 'landing/searchresults.html',
-                  {'query': query})
 
 def hacks(request):
     """Hacks landing page."""
@@ -104,11 +98,6 @@ def learn_javascript(request):
 def promote_buttons(request):
     """Bug 646192: MDN affiliate buttons"""
     return render(request, 'landing/promote_buttons.html')
-
-
-def forum_archive(request):
-    """Forum Archive from phpbb-static landing page."""
-    return render(request, 'landing/forum_archive.html')
 
 
 def common_landing(request, section=None, extra=None):

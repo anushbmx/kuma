@@ -1,7 +1,5 @@
 from nose.tools import ok_
 
-from waffle.models import Flag
-
 from search.filters import (SearchQueryBackend, HighlightFilterBackend,
                             LanguageFilterBackend, DatabaseFilterBackend)
 from search.tests import ElasticTestCase
@@ -9,11 +7,8 @@ from search.views import SearchView
 
 
 class FilterTests(ElasticTestCase):
-    fixtures = ['test_users.json', 'wiki/documents.json']
-
-    def setUp(self):
-        super(FilterTests, self).setUp()
-        Flag.objects.create(name='elasticsearch', everyone=True)
+    fixtures = ['test_users.json', 'wiki/documents.json',
+                'search/filters.json']
 
     def test_search_query(self):
         class SearchQueryView(SearchView):
@@ -60,7 +55,7 @@ class FilterTests(ElasticTestCase):
             filter_backends = (DatabaseFilterBackend,)
 
         view = DatabaseFilterView.as_view()
-        request = self.get_request('/en-US/search?topic=tagged')
+        request = self.get_request('/en-US/search?group=tagged')
         response = view(request)
         self.assertEqual(response.data['count'], 2)
         self.assertEqual(len(response.data['documents']), 2)
@@ -69,20 +64,21 @@ class FilterTests(ElasticTestCase):
         self.assertEqual(response.data['filters'], [
             {
                 'name': 'Group',
+                'slug': 'group',
                 'options': [{
                     'name': 'Tagged',
                     'slug': 'tagged',
                     'count': 2,
                     'active': True,
                     'urls': {
-                        'active': '/en-US/search?topic=tagged',
+                        'active': '/en-US/search?group=tagged',
                         'inactive': '/en-US/search',
                     },
                 }],
             },
         ])
 
-        request = self.get_request('/fr/search?topic=non-existent')
+        request = self.get_request('/fr/search?group=non-existent')
         response = view(request)
         self.assertEqual(response.data['count'], 7)
         self.assertEqual(len(response.data['documents']), 7)

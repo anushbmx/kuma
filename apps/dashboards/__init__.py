@@ -14,7 +14,7 @@ LOCALIZATION_FLAGS = (
 )
 
 # TODO: fix this
-_langugage_choices = settings.LANGUAGE_CHOICES[:]
+_langugage_choices = settings.LANGUAGES[:]
 try:
     _langugage_choices.remove(('en-US', u'English'))
 except ValueError:
@@ -30,5 +30,4 @@ DEFAULT_LOCALE = 'en-US'
 WAFFLE_FLAG = 'l10ndashboard'
 
 # Revisions
-
-PAGE_SIZE = 100
+PAGE_SIZE = 50

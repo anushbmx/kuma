@@ -5,13 +5,20 @@ Core developers often run Kuma in a `Vagrant`_-managed virtual machine to
 simplify :doc:`installation <installation>`. If you're on Mac OS X or Linux
 and looking for a quick way to get started, you should try these instructions.
 
+.. note:: **If you have problems using vagrant**, please paste any errors to `pastebin`_, and `email dev-mdn@lists.mozilla.org <mailto:dev-mdn@lists.mozilla.org?subject=vagrant%20issue>`_. After you email dev-mdn, you can also ask in `IRC`_
+
 .. _vagrant: http://vagrantup.com/
 .. _uses NFS to share the current working directory: http://docs.vagrantup.com/v2/synced-folders/nfs.html
+.. _pastebin: http://pastebin.mozilla.org/
+.. _IRC: irc://irc.mozilla.org:6697/#mdndev
 
 Getting up and running
 ----------------------
 
 #. Install VirtualBox 4.x from http://www.virtualbox.org/
+
+#. (Windows) After installing VirtualBox you need to set the path
+                PATH=C:\Program Files\Oracle\VirtualBox\VBoxManage.exe;
 
 #. Install vagrant using the installer from `vagrantup.com <http://vagrantup.com/>`_
 
@@ -72,24 +79,15 @@ Getting up and running
 
        foreman start
 
-#. You're done, from the host side (your computer) try the following command and you should get the MDN homepage::
+#. You're done! Visit the following address in your browser and you should see the homepage::
 
-       curl -k 'https://developer-local.allizom.org'
+       https://developer-local.allizom.org
 
 
 What’s next?
 ------------
 
 -  See :doc:`development <development>` for tips not specific to vagrant.
-
--  Django and node.js web services must be started within the VM by
-   hand, which makes them easier to restart during development. Details
-   on this should be displayed via ``/etc/motd`` when you log in with
-   ``vagrant ssh``
-
--  Edit files as usual on your host machine; the current directory is
-   mounted via NFS at /home/vagrant/src within the VM. Update should be
-   reflected without any action on your part.
 
 -  Useful vagrant sub-commands::
 
@@ -138,9 +136,24 @@ include:
 
 -  ``kumaediting``:  Allows creation, editing, and translating of documents
 -  ``page_move``:  Allows moving of documents
--  ``revision-dashboard-newusers``:  Allows searching of new users through the revision dashboard
 -  ``events_map``:  Allows display of map on the events page
--  ``elasticsearch``:  Enables elastic search for site search
+
+
+Developing with Vagrant
+-----------------------
+
+-  Edit files as usual on your host machine; the current directory is
+   mounted via NFS at /home/vagrant/src within the VM. Update should be
+   reflected without any action on your part.
+
+-  Visit `https://developer-local.allizom.org/docs/new
+   <https://developer-local.allizom.org/docs/new>`_ to create new wiki pages as
+   needed. Alternatively, download a dump of the ``devmo`` database from
+   `https://developer.allizom.org/landfill/
+   <https://developer.allizom.org/landfill/>`_, extract it, and import it to
+   your local database by running a command like the following in the VM::
+
+     mysql -uroot kuma < /path/to/database/dump.sql
 
 
 AWS and Rackspace

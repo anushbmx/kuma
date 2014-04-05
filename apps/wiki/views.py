@@ -22,7 +22,7 @@ except ImportError:
 
 from django.conf import settings
 from django.db import transaction
-from django.core.exceptions import PermissionDenied, ValidationError
+from django.core.exceptions import PermissionDenied
 from django.utils.safestring import mark_safe
 from django.template import RequestContext, loader
 from django.core.cache import cache
@@ -81,9 +81,6 @@ import wiki.content
 from wiki import kumascript
 
 from pyquery import PyQuery as pq
-
-from django.core.validators import URLValidator
-from django.core.mail import send_mail
 
 
 log = logging.getLogger('k.wiki')
@@ -234,7 +231,7 @@ def _split_slug(slug):
 
         if root in bad_seo_roots:
            if length > 2:
-            seo_root = root + '/' + slug_split[1] 
+            seo_root = root + '/' + slug_split[1]
         else:
             seo_root = root
 
@@ -958,7 +955,7 @@ def new_document(request):
     initial_slug = request.GET.get('slug', '')
     initial_title = initial_slug.replace('_', ' ')
 
-    initial_parent_id = None
+    initial_parent_id = ''
     try:
         initial_parent_id = int(request.GET.get('parent', ''))
     except ValueError:
@@ -1604,6 +1601,7 @@ def compare_revisions(request, document_slug, document_locale):
 
     context = {'document': doc, 'revision_from': revision_from,
                          'revision_to': revision_to}
+
     if request.GET.get('raw', 0):
         response = render(request,
                                 'wiki/includes/revision_diff_table.html',
@@ -1621,39 +1619,6 @@ def select_locale(request, document_slug, document_locale):
     doc = get_object_or_404(
         Document, locale=document_locale, slug=document_slug)
     return render(request, 'wiki/select_locale.html', {'document': doc})
-
-
-@require_http_methods(['GET', 'POST'])
-@prevent_indexing
-def external_signup(request):
-    """ Something """
-    context = {'submitted': False}
-
-    if request.method == 'POST':
-        location = request.POST.get('location', '')
-        context['location'] = location
-
-        if location:
-            validate = URLValidator(verify_exists=True)
-            try:
-                validate(location)
-                context['submitted'] = True
-
-                message = """
-A request for external documentation to be added to MDN has 
-been made for the following address:
-
-%s
-                """ % location
-                send_mail('MVP External Source Documentation Request',
-                            message,
-                            settings.TIDINGS_FROM_ADDRESS,
-                            [constance.config.EXTERNAL_SIGNUP_EMAIL,])
-
-            except ValidationError:
-                context['error'] = _('The URL you provided could not be reached.')
-                pass
-    return render(request, 'wiki/mvp_signup.html', context)
 
 
 @require_http_methods(['GET', 'POST'])
@@ -1972,7 +1937,7 @@ def code_sample(request, document_slug, document_locale, sample_id):
     HTML document"""
 
     # Restrict rendering of live code samples to specified hosts
-    full_address = (''.join(('http', ('', 's')[request.is_secure()], '://', 
+    full_address = (''.join(('http', ('', 's')[request.is_secure()], '://',
                     request.META.get('HTTP_HOST'), request.path)))
 
     if not re.search(constance.config.KUMA_WIKI_IFRAME_ALLOWED_HOSTS, full_address):

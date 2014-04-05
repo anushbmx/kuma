@@ -1,5 +1,4 @@
 # Django settings for kuma project.
-from datetime import date
 import logging
 import os
 import platform
@@ -19,7 +18,7 @@ path = lambda *a: os.path.join(ROOT, *a)
 ROOT_PACKAGE = os.path.basename(ROOT)
 
 ADMINS = (
-    # ('Your Name', 'your_email@domain.com'),
+    ('MDN devs', 'mdn-dev@mozilla.com'),
 )
 
 PROTOCOL = 'https://'
@@ -51,12 +50,6 @@ MIGRATION_DATABASES = {
         'PASSWORD': 'wikipass',
     },
 }
-
-# Dekiwiki has a backend API. protocol://hostname:port
-# If set to False, integration with MindTouch / Dekiwiki will be disabled
-DEKIWIKI_ENDPOINT = False # 'https://developer-stage9.mozilla.org'
-DEKIWIKI_APIKEY = 'SET IN LOCAL SETTINGS'
-DEKIWIKI_MOCK = True
 
 # Cache Settings
 CACHE_BACKEND = 'locmem://?timeout=86400'
@@ -185,8 +178,9 @@ def lazy_langs():
     return dict([(lang.lower(), product_details.languages[lang]['native'])
                 for lang in langs])
 
-LANGUAGES = lazy(lazy_langs, dict)()
-LANGUAGE_CHOICES = sorted(tuple([(i, LOCALES[i].native) for i in MDN_LANGUAGES]), key=lambda lang:lang[0])
+LANGUAGES_DICT = lazy(lazy_langs, dict)()
+LANGUAGES = sorted(tuple([(i, LOCALES[i].native) for i in MDN_LANGUAGES]),
+                   key=lambda lang:lang[0])
 
 # DEKI uses different locale keys
 def lazy_language_deki_map():
@@ -461,6 +455,7 @@ INSTALLED_APPS = (
 
     'dashboards',
     'kpi',
+    'statici18n',
 
     # migrations
     'south',
@@ -571,7 +566,6 @@ MINIFY_BUNDLES = {
             'redesign/css/search.css',
         ),
         'wiki': (
-            'css/wiki.css',
             'css/wiki-screen.css',
             'redesign/css/wiki.css',
             'redesign/css/zones.css',
@@ -626,9 +620,6 @@ MINIFY_BUNDLES = {
         'submission': (
             'redesign/css/submission.css',
         ),
-        'forum-archive': (
-            'redesign/css/forum-archive.css',
-        ),
         'user-banned': (
             'redesign/css/user-banned.css',
         ),
@@ -640,9 +631,9 @@ MINIFY_BUNDLES = {
         'main': (
             'js/jquery-upgrade-compat.js',
             'redesign/js/components.js',
+            'redesign/js/analytics.js',
             'redesign/js/main.js',
             'redesign/js/badges.js',
-            'redesign/js/analytics.js',
         ),
         'jquery2': (
             'js/libs/jquery-2.1.0.js',
@@ -687,11 +678,6 @@ MINIFY_BUNDLES = {
         'search': (
             'redesign/js/search.js',
         ),
-        'wiki-edit': (
-            'js/wiki-edit.js',
-            'js/libs/tag-it.js',
-            'js/wiki-tags-edit.js',
-        ),
         'dashboards': (
             'js/libs/DataTables-1.9.4/media/js/jquery.dataTables.js',
             'js/libs/DataTables-1.9.4/extras/Scroller/media/js/dataTables.scroller.js',
@@ -709,6 +695,14 @@ MINIFY_BUNDLES = {
         'wiki': (
             'redesign/js/search.js',
             'redesign/js/wiki.js',
+        ),
+        'wiki-edit': (
+            'js/wiki-edit.js',
+            'js/libs/tag-it.js',
+            'js/wiki-tags-edit.js',
+        ),
+        'wiki-move': (
+            'js/wiki-move.js',
         ),
         'newsletter': (
             'redesign/js/newsletter.js',
@@ -818,6 +812,9 @@ TIDINGS_CONFIRM_ANONYMOUS_WATCHES = True
 RECAPTCHA_USE_SSL = False
 RECAPTCHA_PRIVATE_KEY = 'SET ME IN SETTINGS_LOCAL'
 RECAPTCHA_PUBLIC_KEY = 'SET ME IN SETTINGS_LOCAL'
+
+# date format, needed for custom revision dashboard
+DATE_INPUT_FORMATS = ('%d/%m/%Y', '%Y/%m/%d', '%m/%d/%Y', '%d-%m-%Y', '%Y-%m-%d', '%m-%d-%Y')
 
 # content flagging
 FLAG_REASONS = (
@@ -1041,11 +1038,6 @@ CONSTANCE_CONFIG = dict(
         "JSON array of tags that are enabled for search faceting"
     ),
 
-    EXTERNAL_SIGNUP_EMAIL = (
-        '',
-        'The email address to receive external docs signup emails.'
-    ),
-
     SESSION_CLEANUP_CHUNK_SIZE = (
         1000,
         'Number of expired sessions to cleanup up in one go.',
@@ -1132,6 +1124,7 @@ GRAPPELLI_INDEX_DASHBOARD = 'admin_dashboard.CustomIndexDashboard'
 
 DBGETTEXT_PATH = 'apps/'
 DBGETTEXT_ROOT = 'translations'
+
 
 def get_user_url(user):
     from sumo.urlresolvers import reverse
